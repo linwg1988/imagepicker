@@ -10,8 +10,11 @@ dependencies {
 使用方法：
 
 1.配置ImageLoader
+    
     ImagePicker默认没有使用图加载框架，考虑到不同项目可能使用不同的图片加载框架，这里讲图片的加载过程分离出来，使用时只用在初始化的时候配置
-这个ImageLoader就可，例如本例中的GlideImageLoader：
+这个ImageLoader就可
+ImagePicker.setImageLoader(new GlideImageLoader());
+，例如本例中的GlideImageLoader：
     public GlideImageLoader implements ImageLoader {
         public void loadImage(Context context,String imagePath,ImageView targetView){
             Glide.with(context).load(imagePath).into(targetView);
