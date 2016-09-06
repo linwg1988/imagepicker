@@ -547,6 +547,12 @@ public class ImagePicker extends DialogFragment {
                             mImageView.setColorFilter(Color.parseColor("#77000000"));
                             selectNum.setText(mSelectedImage.size() + "/" + maxPictureNumber + getResources().getString(R.string.done));
                         }
+                        if(!isUseByDialog){
+                            FragmentActivity ac = getActivity();
+                            if (ac != null && ac instanceof OnImagePickerListener) {
+                                ((OnImagePickerListener) ac).onImagesPicked(mSelectedImage, mImgDir.getAbsolutePath());
+                            }
+                        }
                     }
                 });
             }
