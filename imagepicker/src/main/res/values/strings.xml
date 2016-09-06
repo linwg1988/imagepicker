@@ -1,0 +1,11 @@
+<resources>
+    <string name="img_picker_picking">选择图片</string>
+    <string name="img_picker_all_pic">所有图片</string>
+    <string name="piece">张</string>
+    <string name="no_extra_storage">无法读取sd卡内容</string>
+    <string name="forder_not_exist">文件夹已不存在</string>
+    <string name="no_pic_choiced">还没有选择图片</string>
+    <string name="done">完成</string>
+    <string name="img_picker_most_choice">最多选择</string>
+    <string name="piece_pic">张照片</string>
+</resources>

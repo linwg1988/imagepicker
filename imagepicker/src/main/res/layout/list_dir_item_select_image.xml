@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/light_white"
+    android:padding="8dp" >
+
+    <ImageView
+        android:id="@+id/id_dir_item_image"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:background="@drawable/img_picker_pic_dir"
+        android:paddingBottom="17dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:paddingTop="9dp"
+        android:scaleType="centerCrop"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@id/id_dir_item_image"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/id_dir_item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="所有图片"
+            android:textColor="@color/light_black"
+            android:textSize="@dimen/img_picker_text_least_size" />
+
+        <TextView
+            android:id="@+id/id_dir_item_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="0张"
+            android:textColor="@color/light_black"
+            android:textSize="@dimen/img_picker_text_least_size" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_item_choose"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="24dp"
+        android:src="@drawable/img_picker_dir_choose" />
+
+</RelativeLayout>
