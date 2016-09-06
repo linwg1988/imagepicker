@@ -2,11 +2,13 @@
 
 一个图片选择器ImagePicker，可以被当成dialog使用，同样的可以被当做片段Fragmnet使用.
 添加依赖：
+
 dependencies {
     compile 'org.linwg1988:imagepicker:1.0.0'
 }
 
 使用方法：
+
 1.配置ImageLoader
     ImagePicker默认没有使用图加载框架，考虑到不同项目可能使用不同的图片加载框架，这里讲图片的加载过程分离出来，使用时只用在初始化的时候配置
 这个ImageLoader就可，例如GlideImageLoader：
