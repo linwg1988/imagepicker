@@ -3,6 +3,7 @@ package org.wglin.imagepicker;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -47,6 +48,7 @@ import java.util.List;
  */
 public class ImagePicker extends DialogFragment {
     private static final String PATH = "/Android/Data/imgPicker/";
+    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 20;
     private static ImageLoader imageLoader;
     private boolean isUseByDialog;
 
@@ -316,6 +318,7 @@ public class ImagePicker extends DialogFragment {
                     + MediaStore.Images.Media.MIME_TYPE + "=?";
             selectionArgs = new String[]{"image/jpeg", "image/png", "image/gif"};
         }
+
         Cursor mCursor = mContentResolver.query(mImageUri, null, selection, selectionArgs,
                 MediaStore.Images.Media.DATE_MODIFIED);
 
@@ -586,14 +589,19 @@ public class ImagePicker extends DialogFragment {
     }
 
     private void startPhoto() {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         String path = Environment.getExternalStorageDirectory().toString() + PATH;
         File path1 = new File(path);
         if (!path1.exists()) {
             path1.mkdirs();
         }
+
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         imagePath = path + System.currentTimeMillis() + ".jpg";
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(imagePath)));
+
+        ContentValues contentValues = new ContentValues(1);
+        contentValues.put(MediaStore.Images.Media.DATA, imagePath);
+        Uri uri = getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
         startActivityForResult(intent, REQUEST_CAMERA);
     }
 
@@ -675,7 +683,9 @@ public class ImagePicker extends DialogFragment {
 
         public Builder selectedImages(List<String> selected) {
             this.mSelectedImage.clear();
-            this.mSelectedImage.addAll(selected);
+            if(selected!= null){
+                this.mSelectedImage.addAll(selected);
+            }
             return this;
         }
 

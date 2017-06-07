@@ -4,10 +4,10 @@
 添加依赖：
 
 dependencies {
-    compile 'org.linwg1988:imagepicker:1.0.1'
+    compile 'org.linwg1988:imagepicker:1.0.2'
 }
 
-1.0.1版本在ImagePicker作为Fragment使用时每次点击图片都会回调一次OnImagePickerListener.
+从1.0.1版本开始在ImagePicker作为Fragment使用时每次点击图片都会回调一次OnImagePickerListener.
 
 使用方法：
 
