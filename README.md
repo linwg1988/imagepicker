@@ -34,12 +34,12 @@ public GlideImageLoader implements ImageLoader {
   builder.maxPictureNumber(9);
   builder.build().show(getSupportFragmentManager(), "ImagePicker");
 ~~~
-ImagePicker支持的一些配置：
-a)openCamera        是否开启摄像按钮</br>
-b)supportTitleBar   是否显示标题栏，一般用于片段展示的时候，此时不再需要标题栏</br>
-c)maxPictureNumber  可选的最大图片数量</br>
-d)selectedImages    初始选中的图片地址</br>
-e)imgDirPath        初始选中的图片文件夹</br>
-f)supportWebp       是否支持webp格式的图片，默认不支持</br>
+##ImagePicker支持的一些配置：</br>
+###a)openCamera        是否开启摄像按钮</br>
+###b)supportTitleBar   是否显示标题栏，一般用于片段展示的时候，此时不再需要标题栏</br>
+###c)maxPictureNumber  可选的最大图片数量</br>
+###d)selectedImages    初始选中的图片地址</br>
+###e)imgDirPath        初始选中的图片文件夹</br>
+###f)supportWebp       是否支持webp格式的图片，默认不支持</br>
 
 ps：网上的图片选择器应该蛮多的，这次上传目的主要是熟练jcenter和git,如果能帮到其他人那最好不过了~~.
