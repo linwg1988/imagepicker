@@ -1,4 +1,4 @@
-# imagepicker
+###### imagepicker
 
 一个图片选择器ImagePicker，可以被当成dialog使用，同样的可以被当做片段Fragmnet使用.
 添加依赖：
