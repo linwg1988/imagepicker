@@ -40,6 +40,8 @@ import java.io.FilenameFilter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
@@ -265,6 +267,7 @@ public class ImagePicker extends DialogFragment {
             mGirdView.setAdapter(imageAdapter);
             return;
         }
+
         String[] list = mImgDir.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
@@ -286,6 +289,18 @@ public class ImagePicker extends DialogFragment {
             }
         });
         mImgs = Arrays.asList(list);
+        Collections.sort(mImgs, new Comparator<String>() {
+            @Override
+            public int compare(String lhs, String rhs) {
+                File flhs = new File(mImgDir.getAbsolutePath() + "/" + lhs);
+                File frhs = new File(mImgDir.getAbsolutePath() + "/" + rhs);
+                if(flhs.lastModified() > frhs.lastModified()){
+                    return -1;
+                }else{
+                    return 1;
+                }
+            }
+        });
         imageAdapter = new ImageAdapter();
         mGirdView.setAdapter(imageAdapter);
         mChooseDir.setText(mImgDir.getAbsolutePath().substring(mImgDir.getAbsolutePath().lastIndexOf("/")));
@@ -444,6 +459,18 @@ public class ImagePicker extends DialogFragment {
         });
         if (list != null) {
             mImgs = Arrays.asList(list);
+            Collections.sort(mImgs, new Comparator<String>() {
+                @Override
+                public int compare(String lhs, String rhs) {
+                    File flhs = new File(mImgDir.getAbsolutePath() + "/" + lhs);
+                    File frhs = new File(mImgDir.getAbsolutePath() + "/" + rhs);
+                    if(flhs.lastModified() > frhs.lastModified()){
+                        return -1;
+                    }else{
+                        return 1;
+                    }
+                }
+            });
             mImageCount.setText(folder.getCount() + getString(R.string.piece));
             mChooseDir.setText(folder.getName());
             imageAdapter.notifyDataSetChanged();
