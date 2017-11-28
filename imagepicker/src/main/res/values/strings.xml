@@ -8,4 +8,5 @@
     <string name="done">完成</string>
     <string name="img_picker_most_choice">最多选择</string>
     <string name="piece_pic">张照片</string>
+    <string name="request_camera_permission_decline">获取相机权限失败</string>
 </resources>

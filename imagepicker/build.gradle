@@ -1,8 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 android {
-    compileSdkVersion 23
-    buildToolsVersion '25.0.0'
+    compileSdkVersion 26
+    buildToolsVersion '26.0.3'
 
     defaultConfig {
         minSdkVersion 14
@@ -21,14 +21,14 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:appcompat-v7:26.1.0'
 }
 
 publish {
     userOrg = 'linwg1988'
     groupId = 'org.linwg1988'
     artifactId = 'imagepicker'
-    publishVersion = '1.0.3'
+    publishVersion = '1.0.4'
     desc = 'A libary uses for pick image from your storage.'
     website = 'https://github.com/linwg1988/imagepicker'
 }

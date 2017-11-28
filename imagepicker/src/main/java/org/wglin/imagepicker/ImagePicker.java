@@ -1,11 +1,13 @@
 package org.wglin.imagepicker;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -15,11 +17,13 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -257,7 +261,7 @@ public class ImagePicker extends DialogFragment {
             mImgDirPath = mImgDirPath + "/temp.jpg";
             mImgDir = new File(mImgDirPath).getParentFile();
         }
-        if(popAdapter != null){
+        if (popAdapter != null) {
             popAdapter.setExpandDir(mImgDir);
             popAdapter.notifyDataSetChanged();
         }
@@ -294,9 +298,9 @@ public class ImagePicker extends DialogFragment {
             public int compare(String lhs, String rhs) {
                 File flhs = new File(mImgDir.getAbsolutePath() + "/" + lhs);
                 File frhs = new File(mImgDir.getAbsolutePath() + "/" + rhs);
-                if(flhs.lastModified() > frhs.lastModified()){
+                if (flhs.lastModified() > frhs.lastModified()) {
                     return -1;
-                }else{
+                } else {
                     return 1;
                 }
             }
@@ -388,7 +392,7 @@ public class ImagePicker extends DialogFragment {
             if (picSize > mPicsSize) {
                 mPicsSize = picSize;
                 mImgDir = parentFile;
-                if(popAdapter != null){
+                if (popAdapter != null) {
                     popAdapter.setExpandDir(mImgDir);
                     popAdapter.notifyDataSetChanged();
                 }
@@ -403,7 +407,7 @@ public class ImagePicker extends DialogFragment {
     @SuppressLint("InflateParams")
     @SuppressWarnings("deprecation")
     private void initListDirPopupWindow() {
-        View popView = getLayoutInflater().inflate(R.layout.list_select_image_pop, null);
+        View popView = getInflater().inflate(R.layout.list_select_image_pop, null);
         imagePopWindow = new PopupWindow(popView, ViewGroup.LayoutParams.MATCH_PARENT,
                 (int) (ScreenUtils.getScreenHeight(getActivity()) * 0.7));
         imagePopWindow.setBackgroundDrawable(new BitmapDrawable());
@@ -433,7 +437,7 @@ public class ImagePicker extends DialogFragment {
     public void selected(ImageFolder folder) {
 
         mImgDir = new File(folder.getDir());
-        if(popAdapter != null){
+        if (popAdapter != null) {
             popAdapter.setExpandDir(mImgDir);
             popAdapter.notifyDataSetChanged();
         }
@@ -464,9 +468,9 @@ public class ImagePicker extends DialogFragment {
                 public int compare(String lhs, String rhs) {
                     File flhs = new File(mImgDir.getAbsolutePath() + "/" + lhs);
                     File frhs = new File(mImgDir.getAbsolutePath() + "/" + rhs);
-                    if(flhs.lastModified() > frhs.lastModified()){
+                    if (flhs.lastModified() > frhs.lastModified()) {
                         return -1;
-                    }else{
+                    } else {
                         return 1;
                     }
                 }
@@ -515,9 +519,9 @@ public class ImagePicker extends DialogFragment {
 
             if (convertView == null) {
                 if (getItemViewType(position) == 0) {
-                    convertView = getLayoutInflater().inflate(R.layout.grid_item_first_select_image, parent, false);
+                    convertView = getInflater().inflate(R.layout.grid_item_first_select_image, parent, false);
                 } else {
-                    convertView = getLayoutInflater().inflate(R.layout.grid_item_select_image, parent, false);
+                    convertView = getInflater().inflate(R.layout.grid_item_select_image, parent, false);
                 }
 
                 ViewGroup.LayoutParams layoutParams = convertView.getLayoutParams();
@@ -532,7 +536,7 @@ public class ImagePicker extends DialogFragment {
                 mImageView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        startPhoto();
+                        checkCameraPermission();
                     }
                 });
             }
@@ -577,7 +581,7 @@ public class ImagePicker extends DialogFragment {
                             mImageView.setColorFilter(Color.parseColor("#77000000"));
                             selectNum.setText(mSelectedImage.size() + "/" + maxPictureNumber + getResources().getString(R.string.done));
                         }
-                        if(!isUseByDialog){
+                        if (!isUseByDialog) {
                             FragmentActivity ac = getActivity();
                             if (ac != null && ac instanceof OnImagePickerListener) {
                                 ((OnImagePickerListener) ac).onImagesPicked(mSelectedImage, mImgDir.getAbsolutePath());
@@ -611,8 +615,16 @@ public class ImagePicker extends DialogFragment {
         }
     }
 
-    private LayoutInflater getLayoutInflater() {
+    private LayoutInflater getInflater() {
         return LayoutInflater.from(getActivity());
+    }
+
+    private void checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, 777);
+        } else {
+            startPhoto();
+        }
     }
 
     private void startPhoto() {
@@ -633,6 +645,18 @@ public class ImagePicker extends DialogFragment {
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 777) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startPhoto();
+            } else {
+                Toast.makeText(getActivity(),R.string.request_camera_permission_decline,Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_CANCELED) {
@@ -648,7 +672,7 @@ public class ImagePicker extends DialogFragment {
             if (ac != null && ac instanceof OnImagePickerListener) {
                 ((OnImagePickerListener) ac).onCameraCallBack(imagePath);
             }
-            if(isUseByDialog){
+            if (isUseByDialog) {
                 dismissAllowingStateLoss();
             }
         }
@@ -710,7 +734,7 @@ public class ImagePicker extends DialogFragment {
 
         public Builder selectedImages(List<String> selected) {
             this.mSelectedImage.clear();
-            if(selected!= null){
+            if (selected != null) {
                 this.mSelectedImage.addAll(selected);
             }
             return this;

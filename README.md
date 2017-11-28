@@ -4,7 +4,7 @@
 添加依赖：
 ~~~Java
 dependencies {
-    compile 'org.linwg1988:imagepicker:1.0.3'
+    compile 'org.linwg1988:imagepicker:1.0.4'
 }
 ~~~
 从1.0.1版本开始在ImagePicker作为Fragment使用时每次点击图片都会回调一次OnImagePickerListener.

@@ -1,0 +1,12 @@
+<resources>
+    <string name="img_picker_picking">Choose picture</string>
+    <string name="img_picker_all_pic">All pictures</string>
+    <string name="piece">piece</string>
+    <string name="no_extra_storage">Can\'t read from sdcard.</string>
+    <string name="forder_not_exist">Folder not exist.</string>
+    <string name="no_pic_choiced">Have not chosen pictures yet.还没有选择图片</string>
+    <string name="done">Done</string>
+    <string name="img_picker_most_choice">Limit choose </string>
+    <string name="piece_pic"> piece picture.</string>
+    <string name="request_camera_permission_decline">Request camera permission decline.</string>
+</resources>
