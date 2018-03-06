@@ -1,14 +1,20 @@
 package com.rs.framework;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.wglin.imagepicker.ImagePicker;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,10 +49,33 @@ public class MainActivity extends AppCompatActivity implements ImagePicker.OnIma
     }
 
     private void show() {
-        ImagePicker.Builder builder = new ImagePicker.Builder();
-        builder.openCamera(true);
-        builder.maxPictureNumber(6);
-        builder.build().show(getSupportFragmentManager(), "ImagePicker");
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},123);
+        }else{
+            new ImagePicker.Builder().openCamera(true).maxPictureNumber(6).build().show(getSupportFragmentManager(), "imagePicker");
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == 123){
+            List<String> deniedPermissions = new ArrayList<>();
+            for (int i = 0; i < grantResults.length; i++)
+            {
+                if (grantResults[i] != PackageManager.PERMISSION_GRANTED)
+                {
+                    deniedPermissions.add(permissions[i]);
+                }
+            }
+            if (deniedPermissions.size() > 0)
+            {
+                Toast.makeText(this,"获取权限失败",Toast.LENGTH_SHORT).show();
+            } else
+            {
+                new ImagePicker.Builder().maxPictureNumber(6).openCamera(true).build().show(getSupportFragmentManager(), "imagePicker");
+            }
+        }
     }
 
     @Override

@@ -300,7 +300,9 @@ public class ImagePicker extends DialogFragment {
                 File frhs = new File(mImgDir.getAbsolutePath() + "/" + rhs);
                 if (flhs.lastModified() > frhs.lastModified()) {
                     return -1;
-                } else {
+                } else if(flhs.lastModified() == frhs.lastModified()){
+                    return 0;
+                }else{
                     return 1;
                 }
             }
