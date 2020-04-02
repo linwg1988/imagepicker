@@ -1,26 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent">
 
     <ImageView
         android:id="@+id/id_item_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/img_picker_default_img"
-        android:scaleType="centerCrop" />
+        android:scaleType="centerCrop"
+        android:src="@drawable/img_picker_default_img" />
 
     <ImageButton
         android:id="@+id/id_item_select"
         android:layout_width="18dp"
         android:layout_height="18dp"
-        android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:layout_marginRight="@dimen/img_picker_small_padding"
+        android:layout_alignParentRight="true"
         android:layout_marginTop="@dimen/img_picker_small_padding"
+        android:layout_marginRight="@dimen/img_picker_small_padding"
         android:background="@null"
         android:clickable="false"
         android:scaleType="centerInside"
         android:src="@drawable/img_picker_ic_unselected" />
 
+    <TextView
+        android:id="@+id/tv_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="8dp"
+        android:layout_marginBottom="4dp"
+        android:text="0:00"
+        android:textColor="#fff"
+        android:textSize="12sp" />
 </RelativeLayout>

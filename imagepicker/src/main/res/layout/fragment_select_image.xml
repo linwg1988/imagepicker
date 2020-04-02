@@ -89,7 +89,7 @@
             android:layout_centerVertical="true"
             android:gravity="center"
             android:padding="@dimen/img_picker_design_padding"
-            android:text="0张"
+            android:text="0"
             android:textColor="@color/white"
             android:textSize="@dimen/img_picker_normal_text_size"/>
     </RelativeLayout>

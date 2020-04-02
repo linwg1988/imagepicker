@@ -15,7 +15,7 @@ import java.util.List;
 @SuppressLint("InflateParams")
 class PopAdapter extends BaseAdapter {
     private final ImageLoader imageLoader;
-    Context context;
+    private Context context;
     private List<ImageFolder> imgFolder;
     /**
      * At the first this is the largest dir ,and then it is the choice.
@@ -35,17 +35,15 @@ class PopAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.list_dir_item_select_image, null);
         }
-
         TextView itemName = ViewHolderUtils.get(convertView, R.id.id_dir_item_name);
         TextView itemCount = ViewHolderUtils.get(convertView, R.id.id_dir_item_count);
         ImageView itemImage = ViewHolderUtils.get(convertView, R.id.id_dir_item_image);
         ImageView itemChoose = ViewHolderUtils.get(convertView, R.id.iv_item_choose);
 
-        if (expandDir.getAbsolutePath().toString().equals(imgFolder.get(position).getDir())) {
+        if (expandDir.getAbsolutePath().equals(imgFolder.get(position).getDir())) {
             itemChoose.setImageResource(R.drawable.img_picker_dir_choose);
         } else {
             itemChoose.setImageResource(R.drawable.transition);

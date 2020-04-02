@@ -4,10 +4,10 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements ImagePicker.OnIma
 
     private void replace() {
         ImagePicker.Builder builder = new ImagePicker.Builder();
-        ImagePicker imagePicker = builder.openCamera(true).hideTitleBar()
+        ImagePicker imagePicker = builder.openCamera(false).hideTitleBar().isPickVideo(true)
                 .maxPictureNumber(6).build();
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.fl_container, imagePicker).commit();
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements ImagePicker.OnIma
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},123);
         }else{
-            new ImagePicker.Builder().openCamera(true).maxPictureNumber(6).build().show(getSupportFragmentManager(), "imagePicker");
+            new ImagePicker.Builder().openCamera(false).isPickVideo(true).maxPictureNumber(1).build().show(getSupportFragmentManager(), "imagePicker");
         }
     }
 
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements ImagePicker.OnIma
                 Toast.makeText(this,"获取权限失败",Toast.LENGTH_SHORT).show();
             } else
             {
-                new ImagePicker.Builder().maxPictureNumber(6).openCamera(true).build().show(getSupportFragmentManager(), "imagePicker");
+                new ImagePicker.Builder().isPickVideo(true).maxPictureNumber(1).openCamera(false).build().show(getSupportFragmentManager(), "imagePicker");
             }
         }
     }

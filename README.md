@@ -4,11 +4,11 @@
 添加依赖：
 ~~~Java
 dependencies {
-    compile 'org.linwg1988:imagepicker:1.0.4'
+    implementation 'org.linwg1988:imagepicker:1.0.6'
 }
 ~~~
 从1.0.1版本开始在ImagePicker作为Fragment使用时每次点击图片都会回调一次OnImagePickerListener.
-
+##1.0.6 版本更新说明：androidx编译，支持选择视频（不支持点击播放）
 使用方法：
 
 #### 1.配置ImageLoader
@@ -41,5 +41,5 @@ public GlideImageLoader implements ImageLoader {
 ##### d)selectedImages    初始选中的图片地址</br>
 ##### e)imgDirPath        初始选中的图片文件夹</br>
 ##### f)supportWebp       是否支持webp格式的图片，默认不支持</br>
+##### g)isPickVideo       是否选择视频模式，默认否</br>
 
-ps：网上的图片选择器应该蛮多的，这次上传目的主要是熟练jcenter和git,如果能帮到其他人那最好不过了~~.

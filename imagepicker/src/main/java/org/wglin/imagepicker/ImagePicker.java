@@ -12,18 +12,17 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.core.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,8 +45,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by wengui on 2016/2/26.
@@ -57,6 +58,7 @@ public class ImagePicker extends DialogFragment {
     private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 20;
     private static ImageLoader imageLoader;
     private boolean isUseByDialog;
+    private boolean isPickVideo = false;
 
 
     public static void setImageLoader(ImageLoader imageLoader) {
@@ -77,13 +79,12 @@ public class ImagePicker extends DialogFragment {
      * All of the pictures.
      */
     private List<String> mImgs = new ArrayList<String>();
-
-
     /**
      * Tem helper to prevent rescan of a file.
      */
     private HashSet<String> mDirPaths;
 
+    private Map<String, Long> videoDurationMap = new HashMap<>();
 
     private final int REQUEST_CAMERA = 100;
     /**
@@ -125,6 +126,14 @@ public class ImagePicker extends DialogFragment {
     int totalCount = 0;
 
     private Handler mHandler = new Handler();
+
+    //filename.endsWith(".jpg")
+    //                                || filename.endsWith(".png")
+    //                                || filename.endsWith(".jpeg")
+    //                                || filename.endsWith(".gif")
+    //                                || filename.endsWith(".webp");
+    private ArrayList<String> fileTypeList = new ArrayList<>(Arrays.asList(".jpg", ".png", ".jpeg", ".gif"));
+    private ArrayList<String> videoFileType = new ArrayList<>(Arrays.asList(".avi", ".mp4", ".mpe", ".mpeg", ".mpg", ".mpg4"));
 
     private Runnable mRunnable = new Runnable() {
         @Override
@@ -182,6 +191,7 @@ public class ImagePicker extends DialogFragment {
         final Bundle arguments = getArguments();
         this.mSelectedImage = arguments.getStringArrayList("mSelectedImage");
         this.supportWebp = arguments.getBoolean("supportWebp");
+        this.isPickVideo = arguments.getBoolean("isPickVideo");
         this.maxPictureNumber = arguments.getInt("maxPictureNumber");
         this.openCamera = arguments.getBoolean("openCamera");
         this.mImgDirPath = arguments.getString("mImgDirPath");
@@ -190,6 +200,9 @@ public class ImagePicker extends DialogFragment {
             mSelectedImage = savedInstanceState.getStringArrayList("mSelectedImage");
             imagePath = savedInstanceState.getString("imagePath");
             mImgDirPath = savedInstanceState.getString("mImgDirPath");
+        }
+        if (isPickVideo) {
+            openCamera = false;
         }
         return inflater.inflate(R.layout.fragment_select_image, null);
     }
@@ -204,18 +217,22 @@ public class ImagePicker extends DialogFragment {
             view.findViewById(R.id.img_picker_title_bar).setVisibility(View.GONE);
         }
 
-        backButton = (ImageView) view.findViewById(R.id.img_picker_title_bar_left_menu);
-        selectNum = (TextView) view.findViewById(R.id.img_picker_title_bar_right_text);
+        backButton = view.findViewById(R.id.img_picker_title_bar_left_menu);
+        selectNum = view.findViewById(R.id.img_picker_title_bar_right_text);
         selectNum.setVisibility(View.VISIBLE);
-        imgProgressBar = (ProgressBar) view.findViewById(R.id.img_picker_pb_load_img);
+        imgProgressBar = view.findViewById(R.id.img_picker_pb_load_img);
 
         selectNum.setText(mSelectedImage.size() + "/" + maxPictureNumber + getResources().getString(R.string.done));
 
-        mGirdView = (GridView) view.findViewById(R.id.img_picker_grid);
-        mChooseDir = (TextView) view.findViewById(R.id.img_picker_choose_dir);
-        mImageCount = (TextView) view.findViewById(R.id.img_pickertv_total_count);
-        mBottomLy = (RelativeLayout) view.findViewById(R.id.img_picker_bottom_ly);
-
+        mGirdView = view.findViewById(R.id.img_picker_grid);
+        mChooseDir = view.findViewById(R.id.img_picker_choose_dir);
+        mImageCount = view.findViewById(R.id.img_pickertv_total_count);
+        mBottomLy = view.findViewById(R.id.img_picker_bottom_ly);
+        TextView tvTitle = view.findViewById(R.id.img_pick_title_text);
+        if (isPickVideo) {
+            tvTitle.setText(R.string.img_picker_picking_video);
+            mChooseDir.setText(R.string.img_picker_all_video);
+        }
         mBottomLy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -241,11 +258,13 @@ public class ImagePicker extends DialogFragment {
             @Override
             public void onClick(View v) {
                 if (mSelectedImage.size() == 0) {
-                    toast(getResources().getString(R.string.no_pic_choiced));
+                    toast(getResources().getString(isPickVideo ? R.string.img_picker_no_video_choiced : R.string.no_pic_choiced));
                     return;
                 }
                 FragmentActivity ac = getActivity();
-                ((OnImagePickerListener) ac).onImagesPicked(mSelectedImage, mImgDir.getAbsolutePath());
+                if (ac != null) {
+                    ((OnImagePickerListener) ac).onImagesPicked(mSelectedImage, mImgDir.getAbsolutePath());
+                }
                 dismissAllowingStateLoss();
             }
         });
@@ -272,45 +291,12 @@ public class ImagePicker extends DialogFragment {
             return;
         }
 
-        String[] list = mImgDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String filename) {
-                boolean b;
-                if (Build.VERSION.SDK_INT >=
-                        Build.VERSION_CODES.ICE_CREAM_SANDWICH && supportWebp) {
-                    b = filename.endsWith(".jpg")
-                            || filename.endsWith(".png")
-                            || filename.endsWith(".jpeg")
-                            || filename.endsWith(".gif")
-                            || filename.endsWith(".webp");
-                } else {
-                    b = filename.endsWith(".jpg") || filename.endsWith(".png") || filename.endsWith(".jpeg")
-                            || filename.endsWith(".gif");
-                }
-                if (b)
-                    return true;
-                return false;
-            }
-        });
-        mImgs = Arrays.asList(list);
-        Collections.sort(mImgs, new Comparator<String>() {
-            @Override
-            public int compare(String lhs, String rhs) {
-                File flhs = new File(mImgDir.getAbsolutePath() + "/" + lhs);
-                File frhs = new File(mImgDir.getAbsolutePath() + "/" + rhs);
-                if (flhs.lastModified() > frhs.lastModified()) {
-                    return -1;
-                } else if(flhs.lastModified() == frhs.lastModified()){
-                    return 0;
-                }else{
-                    return 1;
-                }
-            }
-        });
+        String[] list = listFile();
+        sortFile(list);
         imageAdapter = new ImageAdapter();
         mGirdView.setAdapter(imageAdapter);
         mChooseDir.setText(mImgDir.getAbsolutePath().substring(mImgDir.getAbsolutePath().lastIndexOf("/")));
-        mImageCount.setText(mImgs.size() + getResources().getString(R.string.piece));
+        mImageCount.setText(mImgs.size() + getResources().getString(isPickVideo ? R.string.img_picker_qty : R.string.piece));
     }
 
     private void getImages() {
@@ -321,41 +307,48 @@ public class ImagePicker extends DialogFragment {
 
         String firstImage = null;
 
-        Uri mImageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        Uri mImageUri = isPickVideo ? MediaStore.Video.Media.EXTERNAL_CONTENT_URI : MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         ContentResolver mContentResolver = getActivity().getContentResolver();
 
         // 4.0+ support webp picture
         String selection = "";
         String[] selectionArgs;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH && supportWebp) {
+        if (isPickVideo) {
             selection = MediaStore.Images.Media.MIME_TYPE + "=? or "
-                    + MediaStore.Images.Media.MIME_TYPE + "=? or "
-                    + MediaStore.Images.Media.MIME_TYPE + "=? or "
+                    + MediaStore.Images.Media.MIME_TYPE + "=?  or "
                     + MediaStore.Images.Media.MIME_TYPE + "=?";
-            selectionArgs = new String[]{"image/jpeg", "image/png",
-                    "image/gif", "image/webp"};
+            selectionArgs = new String[]{"video/x-msvideo", "video/mp4", "video/mpeg"};
         } else {
-            selection = MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=?  or "
-                    + MediaStore.Images.Media.MIME_TYPE + "=?";
-            selectionArgs = new String[]{"image/jpeg", "image/png", "image/gif"};
+            if (supportWebp) {
+                selection = MediaStore.Images.Media.MIME_TYPE + "=? or "
+                        + MediaStore.Images.Media.MIME_TYPE + "=? or "
+                        + MediaStore.Images.Media.MIME_TYPE + "=? or "
+                        + MediaStore.Images.Media.MIME_TYPE + "=?";
+                selectionArgs = new String[]{"image/jpeg", "image/png", "image/gif", "image/webp"};
+            } else {
+                selection = MediaStore.Images.Media.MIME_TYPE + "=? or "
+                        + MediaStore.Images.Media.MIME_TYPE + "=?  or "
+                        + MediaStore.Images.Media.MIME_TYPE + "=?";
+                selectionArgs = new String[]{"image/jpeg", "image/png", "image/gif"};
+            }
         }
-
         Cursor mCursor = mContentResolver.query(mImageUri, null, selection, selectionArgs,
                 MediaStore.Images.Media.DATE_MODIFIED);
-
         if (mDirPaths == null) {
             mDirPaths = new HashSet<>();
         }
         while (mCursor.moveToNext()) {
             String path = mCursor.getString(mCursor.getColumnIndex(MediaStore.Images.Media.DATA));
-
+            if (isPickVideo) {
+                videoDurationMap.put(path.substring(path.lastIndexOf("/") + 1), mCursor.getLong(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)));
+            }
             if (firstImage == null)
                 firstImage = path;
             File parentFile = new File(path).getParentFile();
             if (parentFile == null)
                 continue;
             String dirPath = parentFile.getAbsolutePath();
-            ImageFolder imageFolder = null;
+            ImageFolder imageFolder;
             if (mDirPaths.contains(dirPath)) {
                 continue;
             } else {
@@ -365,24 +358,19 @@ public class ImagePicker extends DialogFragment {
                 imageFolder.setFirstImagePath(path);
             }
 
+
             String[] list = parentFile.list(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String filename) {
-                    boolean b;
-                    if (Build.VERSION.SDK_INT >=
-                            Build.VERSION_CODES.ICE_CREAM_SANDWICH && supportWebp) {
-                        b = filename.endsWith(".jpg")
-                                || filename.endsWith(".png")
-                                || filename.endsWith(".jpeg")
-                                || filename.endsWith(".gif")
-                                || filename.endsWith(".webp");
-                    } else {
-                        b = filename.endsWith(".jpg") || filename.endsWith(".png") || filename.endsWith(".jpeg")
-                                || filename.endsWith(".gif");
+                    String fileType = filename.substring(filename.indexOf("."));
+                    if (isPickVideo) {
+                        return videoFileType.contains(fileType);
                     }
-                    if (b)
-                        return true;
-                    return false;
+                    if (supportWebp) {
+                        return fileType.equals(".webp") || fileTypeList.contains(fileType);
+                    } else {
+                        return fileTypeList.contains(fileType);
+                    }
                 }
             });
             int picSize = list == null ? 0 : list.length;
@@ -415,7 +403,7 @@ public class ImagePicker extends DialogFragment {
         imagePopWindow.setBackgroundDrawable(new BitmapDrawable());
         imagePopWindow.setFocusable(true);
 
-        ListView mListDir = (ListView) popView.findViewById(R.id.id_list_dir);
+        ListView mListDir = popView.findViewById(R.id.id_list_dir);
         popAdapter = new PopAdapter(getActivity(), imageLoader, imgFolder, mImgDir);
         mListDir.setAdapter(popAdapter);
         imagePopWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
@@ -436,48 +424,52 @@ public class ImagePicker extends DialogFragment {
         });
     }
 
-    public void selected(ImageFolder folder) {
+    private String[] listFile() {
+        return mImgDir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                String fileType = filename.substring(filename.lastIndexOf("."));
+                if (isPickVideo) {
+                    return videoFileType.contains(fileType);
+                } else {
+                    if (supportWebp) {
+                        return filename.endsWith(".webp") || fileTypeList.contains(fileType);
+                    } else {
+                        return fileTypeList.contains(fileType);
+                    }
+                }
+            }
+        });
+    }
 
+    private void sortFile(String[] list) {
+        mImgs = Arrays.asList(list);
+        Collections.sort(mImgs, new Comparator<String>() {
+            @Override
+            public int compare(String lhs, String rhs) {
+                File flhs = new File(mImgDir.getAbsolutePath() + "/" + lhs);
+                File frhs = new File(mImgDir.getAbsolutePath() + "/" + rhs);
+                if (flhs.lastModified() > frhs.lastModified()) {
+                    return -1;
+                } else if (flhs.lastModified() == frhs.lastModified()) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+        });
+    }
+
+    public void selected(ImageFolder folder) {
         mImgDir = new File(folder.getDir());
         if (popAdapter != null) {
             popAdapter.setExpandDir(mImgDir);
             popAdapter.notifyDataSetChanged();
         }
-        String[] list = mImgDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String filename) {
-                boolean b;
-                if (Build.VERSION.SDK_INT >=
-                        Build.VERSION_CODES.ICE_CREAM_SANDWICH && supportWebp) {
-                    b = filename.endsWith(".jpg") ||
-                            filename.endsWith(".png")
-                            || filename.endsWith(".jpeg")
-                            || filename.endsWith(".gif")
-                            || filename.endsWith(".webp");
-                } else {
-                    b = filename.endsWith(".jpg") || filename.endsWith(".png") || filename.endsWith(".jpeg")
-                            || filename.endsWith(".gif");
-                }
-                if (b)
-                    return true;
-                return false;
-            }
-        });
+        String[] list = listFile();
         if (list != null) {
-            mImgs = Arrays.asList(list);
-            Collections.sort(mImgs, new Comparator<String>() {
-                @Override
-                public int compare(String lhs, String rhs) {
-                    File flhs = new File(mImgDir.getAbsolutePath() + "/" + lhs);
-                    File frhs = new File(mImgDir.getAbsolutePath() + "/" + rhs);
-                    if (flhs.lastModified() > frhs.lastModified()) {
-                        return -1;
-                    } else {
-                        return 1;
-                    }
-                }
-            });
-            mImageCount.setText(folder.getCount() + getString(R.string.piece));
+            sortFile(list);
+            mImageCount.setText(folder.getCount() + getString(isPickVideo ? R.string.img_picker_qty : R.string.piece));
             mChooseDir.setText(folder.getName());
             imageAdapter.notifyDataSetChanged();
         } else {
@@ -546,7 +538,8 @@ public class ImagePicker extends DialogFragment {
             if (getItemViewType(position) == 1) {
                 final ImageView mImageView = ViewHolderUtils.get(convertView, R.id.id_item_image);
                 final ImageView mSelect = ViewHolderUtils.get(convertView, R.id.id_item_select);
-
+                final TextView tvDuration = ViewHolderUtils.get(convertView, R.id.tv_duration);
+                tvDuration.setVisibility(isPickVideo ? View.VISIBLE : View.GONE);
                 selectNum.setText(mSelectedImage.size() + "/" + maxPictureNumber + getResources().getString(R.string.done));
                 final int pos;
                 if (openCamera) {
@@ -554,7 +547,10 @@ public class ImagePicker extends DialogFragment {
                 } else {
                     pos = position;
                 }
-
+                if (isPickVideo) {
+                    Long duration = videoDurationMap.get(mImgs.get(pos));
+                    tvDuration.setText(longToTimeFormat(duration));
+                }
                 imageLoader.loadImage(getActivity(),
                         "file://" + mImgDir.getAbsolutePath() + "/" + mImgs.get(pos), mImageView);
 
@@ -575,7 +571,7 @@ public class ImagePicker extends DialogFragment {
                             selectNum.setText(mSelectedImage.size() + "/" + maxPictureNumber + getResources().getString(R.string.done));
                         } else {
                             if (mSelectedImage.size() == maxPictureNumber) {
-                                T.show(getActivity(), getResources().getString(R.string.img_picker_most_choice) + maxPictureNumber + getString(R.string.piece_pic), Toast.LENGTH_SHORT);
+                                T.show(getActivity(), getResources().getString(R.string.img_picker_most_choice) + maxPictureNumber + getString(isPickVideo ? R.string.img_picker_qty_video : R.string.piece_pic), Toast.LENGTH_SHORT);
                                 return;
                             }
                             mSelectedImage.add(mImgDir.getAbsolutePath() + "/" + mImgs.get(pos));
@@ -617,6 +613,25 @@ public class ImagePicker extends DialogFragment {
         }
     }
 
+    private String longToTimeFormat(Long duration) {
+        long second = duration / 1000;
+        long s = second % 60;
+        long m = second / 60;
+        long h = m / 60;
+        if (h > 0) {
+            return wrapZero(h) + ":" + wrapZero(m) + ":" + wrapZero(s);
+        } else {
+            return wrapZero(m) + ":" + wrapZero(s);
+        }
+    }
+
+    private String wrapZero(long l) {
+        if (l < 10) {
+            return "0" + l;
+        }
+        return String.valueOf(l);
+    }
+
     private LayoutInflater getInflater() {
         return LayoutInflater.from(getActivity());
     }
@@ -653,7 +668,7 @@ public class ImagePicker extends DialogFragment {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startPhoto();
             } else {
-                Toast.makeText(getActivity(),R.string.request_camera_permission_decline,Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.request_camera_permission_decline, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -704,6 +719,8 @@ public class ImagePicker extends DialogFragment {
 
         private boolean supportWebp = false;
 
+        private boolean isPickVideo = false;
+
         private String mImgDirPath;
 
         public Builder openCamera(boolean open) {
@@ -713,6 +730,11 @@ public class ImagePicker extends DialogFragment {
 
         public Builder supportWebp(boolean supportWebp) {
             this.supportWebp = supportWebp;
+            return this;
+        }
+
+        public Builder isPickVideo(boolean isPickVideo) {
+            this.isPickVideo = isPickVideo;
             return this;
         }
 
@@ -749,6 +771,7 @@ public class ImagePicker extends DialogFragment {
             argus.putBoolean("openCamera", openCamera);
             argus.putBoolean("supportTitleBar", supportTitleBar);
             argus.putBoolean("supportWebp", supportWebp);
+            argus.putBoolean("isPickVideo", isPickVideo);
             argus.putStringArrayList("mSelectedImage", mSelectedImage);
             argus.putString("mImgDirPath", mImgDirPath);
             picker.setArguments(argus);
