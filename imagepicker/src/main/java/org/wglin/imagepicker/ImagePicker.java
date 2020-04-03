@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
@@ -23,6 +24,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.core.content.ContextCompat;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -362,7 +364,7 @@ public class ImagePicker extends DialogFragment {
             String[] list = parentFile.list(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String filename) {
-                    String fileType = filename.substring(filename.indexOf("."));
+                    String fileType = filename.contains(".") ? filename.substring(filename.indexOf(".")) : "";
                     if (isPickVideo) {
                         return videoFileType.contains(fileType);
                     }
@@ -428,7 +430,7 @@ public class ImagePicker extends DialogFragment {
         return mImgDir.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                String fileType = filename.substring(filename.lastIndexOf("."));
+                String fileType = filename.contains(".") ? filename.substring(filename.lastIndexOf(".")) : "";
                 if (isPickVideo) {
                     return videoFileType.contains(fileType);
                 } else {

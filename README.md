@@ -4,11 +4,12 @@
 添加依赖：
 ~~~Java
 dependencies {
-    implementation 'org.linwg1988:imagepicker:1.0.6'
+    implementation 'org.linwg1988:imagepicker:1.0.7'
 }
 ~~~
 从1.0.1版本开始在ImagePicker作为Fragment使用时每次点击图片都会回调一次OnImagePickerListener.
-##1.0.6 版本更新说明：androidx编译，支持选择视频（不支持点击播放）
+## 1.0.6 版本更新说明：androidx编译，支持选择视频（不支持点击播放）
+## 1.0.7 版本更新说明：修复文件扩展名不存在时的崩溃错误
 使用方法：
 
 #### 1.配置ImageLoader
